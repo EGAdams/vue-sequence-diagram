@@ -4,97 +4,112 @@
     <div class="seqdiagram_sysbox">
       <!-- column -->
       <div
-        v-for="(column,index) in columnList"
+        v-for="(column, index) in columnList"
         class="subsys"
         ref="subsys"
         :key="column.name"
-        :name="'subsys'+index"
+        :name="'subsys' + index"
       >
-        <div class="title">{{column.name}}</div>
+        <div class="title">{{ column.name }}</div>
         <div class="bodybox">
-          <!-- 第一个segment预留line -->
+              <!-- The first segment reserved line -->
+          
           <div class="segment-line"></div>
-          <!-- 循环计算其他的segment -->
-          <template v-for="(segment,segIndex) in column['segments']">
+          
+              <!-- Calculate other segments in a loop -->
+          
+          <template v-for="(segment, segIndex) in column['segments']">
             <div
               v-if="segment.isBlock"
-              :key="index+'-'+segIndex"
+              :key="index + '-' + segIndex"
               class="segment-block"
-              :style="{flex:segment.end-segment.begin+1,backgroundColor:column.color}"
-            ></div>
+              :style="{
+                flex: segment.end - segment.begin + 1,
+                backgroundColor: column.color
+              }">
+            </div>
             <div
               v-if="!segment.isBlock"
-              :key="index+'-'+segIndex"
+              :key="index + '-' + segIndex"
               class="segment-line"
-              :style="{flex:segment.end-segment.begin+1}"
+              :style="{ flex: segment.end - segment.begin + 1 }"
             ></div>
           </template>
-          <!-- 最后一个segment预留line -->
+
+              <!-- The last segment reserved line -->
+          
           <div class="segment-line"></div>
         </div>
-        <div class="title">{{column.name}}</div>
+        <div class="title">{{ column.name }}</div>
       </div>
     </div>
     <!-- line -->
-    <template v-for="(line,index) in rowList">
+    <template v-for="(line, index) in rowList">
       <!-- A->B -->
       <div
         v-if="line['fromColumnIdx'] < line['toColumnIdx']"
         ref="line"
         @click="$emit('line-click', index, line)"
-        :key="'line-'+index"
+        :key="'line-' + index"
         class="arrow_line"
         :style="lineStyles[index]"
       >
         <div :class="line['lineType']"></div>
         <div class="arrow_to_right"></div>
-        <div class="note">{{line.note}}</div>
+        <div class="note">{{ line.note }}</div>
         <!-- label -->
-        <div class="line_label" :style="labelStyles[index]">{{line['label']}}</div>
+        <div class="line_label" :style="labelStyles[index]">
+          {{ line['label'] }}
+        </div>
       </div>
       <!-- A<-B -->
       <div
         v-if="line['fromColumnIdx'] > line['toColumnIdx']"
         ref="line"
         @click="$emit('line-click', index, line)"
-        :key="'line-'+index"
+        :key="'line-' + index"
         class="arrow_line"
         :style="lineStyles[index]"
       >
         <div class="arrow_to_left"></div>
         <div :class="line['lineType']"></div>
-        <div class="note">{{line.note}}</div>
+        <div class="note">{{ line.note }}</div>
         <!-- label -->
-        <div class="line_label" :style="labelStyles[index]">{{line['label']}}</div>
+        <div class="line_label" :style="labelStyles[index]">
+          {{ line['label'] }}
+        </div>
       </div>
       <!-- A->A -->
       <div
         v-if="line['fromColumnIdx'] == line['toColumnIdx']"
         ref="line"
         @click="$emit('line-click', index, line)"
-        :key="'line-'+index"
+        :key="'line-' + index"
         class="self_msg_line"
         :style="lineStyles[index]"
       >
         <div :class="line['lineType']"></div>
         <div class="arrow"></div>
-        <div class="note">{{line.note}}</div>
+        <div class="note">{{ line.note }}</div>
         <!-- label -->
-        <div class="line_label" :style="labelStyles[index]">{{line['label']}}</div>
+        <div class="line_label" :style="labelStyles[index]">
+          {{ line['label'] }}
+        </div>
       </div>
     </template>
   </div>
 </template>
+
 <script>
 export default {
   name: 'SequenceDiagram',
   props: {
-    // 数据 [{label:'',from:'',to:'',note:'',isDash:1}]
+    // data [{label:'',from:'',to:'',note:'',isDash:1}]
     dataList: {
       type: Array
     }
   },
-  data() {
+  data () {
     return {
       // 所有数据行的信息
       rowList: [],
@@ -117,7 +132,7 @@ export default {
       resizeFunction: null
     }
   },
-  created() {
+  created () {
     // 循环所有数据行，计算列信息
     for (var i = 0; i < this.dataList.length; ++i) {
       // copy用户传递的原始数据对象，保存到rowList
@@ -155,26 +170,28 @@ export default {
       this._generateColumnSegment(this.columnList[i])
     }
   },
-  mounted() {
+  mounted () {
     this.$nextTick(() => {
       this.reCalculateLinePosition()
     })
     const that = this
-    this.resizeFunction = function() {
-       that.reCalculateLinePosition()
+    this.resizeFunction = function () {
+      that.reCalculateLinePosition()
     }
-    // 增加监听
+    // Increase monitoring
+
     window.addEventListener('resize', this.resizeFunction)
   },
-  beforeDestroy() {
-    // 移除监听
+  beforeDestroy () {
+    // Remove monitor
+
     window.removeEventListener('resize', this.resizeFunction)
   },
   methods: {
     /**
-     * 根据列名，计算列的信息，并返回列的索引，
+     * According to the column name, calculate the information of the column and return the index of the column，
      */
-    _ensureColumnIndex(columnName) {
+    _ensureColumnIndex (columnName) {
       for (var j = 0; j < this.columnList.length; ++j) {
         if (this.columnList[j]['name'] == columnName) {
           return j
@@ -187,21 +204,24 @@ export default {
         color: this.colorList[idx % this.colorList.length],
         rowNumbers: []
       })
-      // 返回列的索引
+      // Returns the index of the column
       return idx
     },
     /**
-     * 计算列的分段样式
+     * Calculated column segmentation style
      */
-    _generateColumnSegment(columnItem) {
+    _generateColumnSegment (columnItem) {
       columnItem['segments'] = []
       // calculate dots
       var bitmap = []
-      // 所有行默认为0
+      // All rows default to 0
       for (var i = 0; i < this.dataList.length; ++i) {
         bitmap.push(0)
       }
-      // columnItem['rowNumbers']=[1,8]说明当前列在第2行、第9行位置处显示block
+      // columnItem['rowNumbers']=[1,8]
+      // Explain that the current column is displayed in
+      // the second row and the 9th rowblock
+
       for (var i = 0; i < columnItem['rowNumbers'].length; ++i) {
         // 1代表当前段为block 0代表line
         bitmap[columnItem['rowNumbers'][i]] = 1
@@ -252,9 +272,9 @@ export default {
       })
     },
     /**
-     * 重新计算线的位置
+     * Recalculate the position of the line
      */
-    reCalculateLinePosition() {
+    reCalculateLinePosition () {
       // console.log('===========recal_line===========')
       if (this.rowList.length === 0) {
         return
@@ -268,16 +288,24 @@ export default {
         left: 0,
         top: 0
       }
+
       // segment block
+
       var segBlockDom = document.querySelector('[name=subsys0] .segment-block')
       if (!segBlockDom) {
         return
       }
-      // segment block宽度
+
+      // segment block width
+
       var segBlockWidth = segBlockDom.clientWidth
-      // 列的高度
+
+      // Column height
+
       var columnBodyDom = document.querySelector('[name=subsys0] .bodybox')
-      // 清空原样式
+
+      // Clear original style
+
       this.lineStyles.length = 0
       this.labelStyles.length = 0
       for (var i = 0; i < this.rowList.length; ++i) {
@@ -288,61 +316,70 @@ export default {
           top = 0,
           left = 0
 
-          // calculate top
-          var segCount = this.rowList.length + 1
-          var avgSegheight = columnBodyDom.offsetHeight / segCount
-          var columnBodyTop = columnBodyDom.offsetTop
+        // calculate top
 
-        // A->A类型
+        var segCount = this.rowList.length + 1
+        var avgSegheight = columnBodyDom.offsetHeight / segCount
+        var columnBodyTop = columnBodyDom.offsetTop
+
+        // A->A Types of
+
         if (line['fromColumnIdx'] === line['toColumnIdx']) {
           var columnDom = this.$refs.subsys[line['fromColumnIdx']]
 
           var leftPosition =
-            columnDom.offsetLeft +
-            columnDom.clientWidth / 2 +
-            segBlockWidth / 2
+            columnDom.offsetLeft + columnDom.clientWidth / 2 + segBlockWidth / 2
 
           // postion
+
           width = columnDom.clientWidth
           top = columnBodyTop + (i + 1) * avgSegheight - 5 - baseOffset.top
           left = leftPosition - baseOffset.left
-
         } else {
           // A->B OR B->A
-          // 开始列的dom
+          // Start column dom
+
           var fromDom = this.$refs.subsys[line['fromColumnIdx']]
-          // 结束列的dom
+
+          // End of the column dom
+
           var toDom = this.$refs.subsys[line['toColumnIdx']]
 
           var leftDom = null,
             rightDom = null
           if (line['fromColumnIdx'] < line['toColumnIdx']) {
             // line is left to right
+
             leftDom = fromDom
             rightDom = toDom
           } else {
             // line is right to left
+
             leftDom = toDom
             rightDom = fromDom
           }
           // calculate line's left and right end position, calculate width
+
           var leftPosition =
             leftDom.offsetLeft + leftDom.clientWidth / 2 + segBlockWidth / 2
           var rightPosition =
             rightDom.offsetLeft + rightDom.clientWidth / 2 - segBlockWidth / 2
 
-          // 设置position
+          // set up position
+
           width = rightPosition - leftPosition
           top = columnBodyTop + (i + 1) * avgSegheight - 5 - baseOffset.top
           left = leftPosition - baseOffset.left
         }
 
-        // 记录position
+        // record position
+
         this.lineStyles.push({
           width: width + 'px',
           top: top + 'px',
           left: left + 'px'
         })
+
         this.labelStyles.push({
           left: -1 * left + 'px'
         })
