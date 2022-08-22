@@ -548,7 +548,7 @@ export default {
             text-align: center;
             font-size: @large_font_size;
             text-shadow: 2 * @px 2 * @px 2 * @px @box_shadowcolor;
-            paddng: 0 8 * @px 0 8 * @px;
+            padding: 0 8 * @px 0 8 * @px;
             color: dimgray;
         }
     }
